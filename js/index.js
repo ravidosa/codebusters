@@ -30,3 +30,11 @@ $(document).ready(() => {
         ReactDOM.render(<Cipher marathon={true} type="aristocrat"/>, el);
     });
 })
+$(document).keydown(function(e){
+    if(e.which === 123){
+       return false;
+    }
+});
+$(document).bind("contextmenu",function(e) { 
+    e.preventDefault();
+});

@@ -80,3 +80,12 @@ h5 {
   margin: 0 auto;
 
 }
+p, input, label {
+  font-size: 8px;
+}
+.container {
+  width: 100%;
+}
+input {
+  margin-bottom: 10px;
+}

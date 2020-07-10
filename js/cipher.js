@@ -19,7 +19,10 @@ class Cipher extends React.Component {
         timerTime: 0,
         score: [0, 0],
         checked: false,
-        alphabet: en_alphabet
+        alphabet: en_alphabet,
+        questions: [],
+        maracheck: 0,
+        name: ""
       }
 
       this.setLetter = this.setLetter.bind(this);
@@ -27,6 +30,9 @@ class Cipher extends React.Component {
       this.getProb = this.getProb.bind(this);
       this.nextProb = this.nextProb.bind(this);
       this.checkProb = this.checkProb.bind(this);
+      this.startMarathon = this.startMarathon.bind(this);
+      this.sendMarathon = this.sendMarathon.bind(this);
+      this.setData = this.setData.bind(this);
     }
 
     setLetter(event) {
@@ -96,6 +102,7 @@ class Cipher extends React.Component {
 
     nextProb() {
       if (this.props.marathon) {
+        this.checkProb();
         this.getProb(["aristocrat", "atbash", "caesar", "patristocrat", "affine", "xenocrypt"][Math.floor(Math.random() * 6)]);
       }
       else {
@@ -117,6 +124,34 @@ class Cipher extends React.Component {
       else if (!this.state.checked) {
         this.setState({score: [this.state.score[0], this.state.score[1] + 1], checked: true})
       }
+
+      if (this.props.marathon && !this.state.checked) {
+        let currq = this.state.questions;
+        currq.push({question: this.state.plaintext, mistakes: mistakes, time: Math.floor(this.state.timerTime / 1000), type: this.props.type})
+        this.setState({questions: currq});
+      }
+    }
+
+    async startMarathon() {
+      this.setState({maracheck: 1})
+      await this.stopTimer();
+      await this.resetTimer();
+      this.startTimer();
+    }
+
+    async sendMarathon() {
+      await this.checkProb();
+      await firebase.database().ref('results/' + this.state.name + " (" + new Date() + ")").set({
+        name: this.state.name,
+        questions: this.state.questions,
+        time: Math.floor(this.state.timerTime / 1000),
+        score: this.state.score[0]
+      });
+      this.setState({maracheck: 2})
+    }
+
+    setData() {
+      this.setState({name: event.target.value})
     }
 
     startTimer = () => {
@@ -161,84 +196,106 @@ class Cipher extends React.Component {
       let minutes = ("0" + (Math.floor(this.state.timerTime / 60000) % 60)).slice(-2);
       let hours = ("0" + Math.floor(this.state.timerTime / 3600000)).slice(-2);
       
-      return <div className={`box content`} tabIndex={-1} onKeyDown={this.setLetter}>
-        <h1>{this.state.probType}</h1>
-        <p>{`Solve this code by ${this.state.source} which has been encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}.`}</p>
-        {
-            this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
-                return(
-                    <div class="word" onClick={this.selectLetter}>
-                        {
-                            word.split("").map((letter, index) => {
-                                if (this.state.alphabet.indexOf(letter) !== -1) {
-                                    return(
-                                        <div class="letter">
-                                            <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
-                                            <div>{this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}</div>
-                                        </div>
-                                    )
-                                }
-                                else {
-                                    return(
-                                        <div class="letter">
-                                            <div>{letter}</div>
-                                            <div>&nbsp;</div>
-                                        </div>
-                                    )
-                                }
-                            })
-                        }
-                    </div>
-                )
-            })
-        }
-        <table>
-          <tr>
-              {
-                this.state.alphabet.split("").map((letter, index) => {
-                  return <th>{letter}</th>
-                })
-              }
-          </tr>
-          <tr>
-              {
-                this.state.alphabet.split("").map((letter, index) => {
-                  return <td>{(this.state.plaintext.match(new RegExp(this.state.alphabet[this.state.mapping.indexOf(letter)], "g")) || []).length}</td>
-                })
-              }
-          </tr>
-          <tr>
-              {
-                this.state.alphabet.split("").map((letter, index) => {
-                  return <td>{this.state.guesses[this.state.alphabet.indexOf(letter)]}</td>
-                })
-              }
-          </tr>
-        </table>
-        <div className="stopwatch">
-          <div className={`stopwatch-display ${parseInt(minutes) >= 50 ? "warning" : ""}`}>
-            {hours} : {minutes} : {seconds} : {centiseconds}
+      return <div class="container">
+        {(!this.props.marathon || this.state.maracheck === 1) && (
+          <div className={`box content`} tabIndex={-1} onKeyDown={this.setLetter}>
+            <h1>{this.state.probType}</h1>
+            <p>{`Solve this code by ${this.state.source} which has been encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}.`}</p>
+            {
+                this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
+                    return(
+                        <div class="word" onClick={this.selectLetter}>
+                            {
+                                word.split("").map((letter, index) => {
+                                    if (this.state.alphabet.indexOf(letter) !== -1) {
+                                        return(
+                                            <div class="letter">
+                                                <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
+                                                <div>{this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}</div>
+                                            </div>
+                                        )
+                                    }
+                                    else {
+                                        return(
+                                            <div class="letter">
+                                                <div>{letter}</div>
+                                                <div>&nbsp;</div>
+                                            </div>
+                                        )
+                                    }
+                                })
+                            }
+                        </div>
+                    )
+              })
+          }
+          <table>
+              <tr>
+                  {
+                    this.state.alphabet.split("").map((letter, index) => {
+                      return <th>{letter}</th>
+                    })
+                  }
+              </tr>
+              <tr>
+                  {
+                    this.state.alphabet.split("").map((letter, index) => {
+                      return <td>{(this.state.plaintext.match(new RegExp(this.state.alphabet[this.state.mapping.indexOf(letter)], "g")) || []).length}</td>
+                    })
+                  }
+              </tr>
+              <tr>
+                  {
+                    this.state.alphabet.split("").map((letter, index) => {
+                      return <td>{this.state.guesses[this.state.alphabet.indexOf(letter)]}</td>
+                    })
+                  }
+              </tr>
+          </table>
+          <div className="stopwatch">
+            <div className={`stopwatch-display ${parseInt(minutes) >= 50 ? "warning" : ""}`}>
+              {hours} : {minutes} : {seconds} : {centiseconds}
+            </div>
+            <br></br>
+            {this.state.timerOn === false && this.state.timerTime === 0 && (
+              <button onClick={this.startTimer}>start</button>
+            )}
+            {this.state.timerOn === true && !this.props.marathon && (
+              <button onClick={this.stopTimer}>stop</button>
+            )}
+            {this.state.timerOn === false && this.state.timerTime > 0 && !this.props.marathon && (
+              <button onClick={this.startTimer}>resume</button>
+            )}
+            {this.state.timerOn === false && this.state.timerTime > 0 && !this.props.marathon && (
+              <button onClick={this.resetTimer}>reset</button>
+            )}
           </div>
-          <br></br>
-          {this.state.timerOn === false && this.state.timerTime === 0 && (
-            <button onClick={this.startTimer}>start</button>
-          )}
-          {this.state.timerOn === true && (
-            <button onClick={this.stopTimer}>stop</button>
-          )}
-          {this.state.timerOn === false && this.state.timerTime > 0 && (
-            <button onClick={this.startTimer}>resume</button>
-          )}
-          {this.state.timerOn === false && this.state.timerTime > 0 && (
-            <button onClick={this.resetTimer}>reset</button>
-          )}
+          <h5>{this.state.score[0] + "/" + this.state.score[1]}</h5>
+          <div class="prevnext">
+            <button onClick={this.checkProb}>check</button>
+            <button onClick={this.nextProb}>next</button>
+            {this.props.marathon && (
+              <button onClick={this.sendMarathon}>finish!</button>
+            )}
+          </div>
         </div>
-        <h5>{this.state.score[0] + "/" + this.state.score[1]}</h5>
-        <div class="prevnext">
-          <button onClick={this.checkProb}>check</button>
-          <button onClick={this.nextProb}>next</button>
-        </div>
-        <br></br>
+        )}
+        {(this.props.marathon && this.state.maracheck === 0) && (
+          <div className={`box content`}>
+            <h1>codebusters test</h1>
+            <p>marathon mode gives you randomized question types from the ones listed above. if you select the record option, your results will be recorded and sent to a server where others can view your results. in short, it's an easy way to do codebusters tryouts online. good luck! ヽ(*・ω・)ﾉ</p>
+            <label for="name">enter name:</label>
+            <input type="text" id="name" name="name" onChange={this.setData}></input>
+            <br></br>
+            <button onClick={this.startMarathon}>start</button>
+          </div>
+        )}
+        {(this.props.marathon && this.state.maracheck === 2) && (
+          <div className={`box content`}>
+            <h1>test complete!</h1>
+            <p>we pride ourselves on transparency. go <a href="https://codebusters-406e6.firebaseio.com/results.json">here</a> to check your results. or <a href="https://github.com/mobiusdonut/codebusters">here</a> to check out the source code.</p>
+          </div>
+        )}
       </div>;
     }
     
