@@ -1,0 +1,82 @@
+body {
+  height: 100vh;
+  margin: 0;
+  display: grid;
+  align-content: center;
+  font-family: monospace;
+  word-wrap: break-word;
+}
+.box, .buttonchoice {
+  width: 75vw;
+  word-wrap: break-word;
+  margin: 0 auto;
+}
+.box h1 {
+  font-size: 20px;
+}
+.word {
+  margin-right: 5px;
+  margin-bottom: 5px;
+  background-color: #eaeaea;
+  padding: 2px;
+  border-radius: 2px;
+}
+div {
+  display: inline-block;
+}
+.letter > div {
+  display: block;
+  pointer-events: none;
+}
+.selected, .warning {
+  color: #ff0000;
+}
+.stopwatch-display {
+  padding: 10px 0;
+}
+.stopwatch {
+  margin-left: 0 auto;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+button {
+  background-color: #202b33;
+  border: solid 1px transparent;
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: #ffffff;
+  font-size: 1vw;
+  cursor: pointer;
+  font-family: monospace;
+}
+button:hover {
+  background-color: #106ba3;
+}
+.prevnext {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+table {
+  margin-top: 10px;
+}
+table > * {
+  font-size: 1vw;
+}
+h5 {
+  text-align: center;
+  margin-bottom: 10px !important;
+}
+.buttonchoice, h1 {
+  text-align: center;
+}
+.prevnext > button, .stopwatch > button {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+.hero {
+  width: 20%;
+  margin: 0 auto;
+
+}
