@@ -75,7 +75,7 @@ class Cipher extends React.Component {
         }
       }
 
-      fetch('http://api.quotable.io/random')
+      fetch('https://api.quotable.io/random')
       .then(response => response.json())
       .then(data => {
         if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
