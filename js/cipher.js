@@ -22,7 +22,8 @@ class Cipher extends React.Component {
         alphabet: en_alphabet,
         questions: [],
         maracheck: 0,
-        name: ""
+        name: "",
+        record: false
       }
 
       this.setLetter = this.setLetter.bind(this);
@@ -143,18 +144,25 @@ class Cipher extends React.Component {
     }
 
     async sendMarathon() {
-      await this.checkProb();
-      await firebase.database().ref('results/' + this.state.name + " (" + new Date() + ")").set({
-        name: this.state.name,
-        questions: this.state.questions,
-        time: Math.floor(this.state.timerTime / 1000),
-        score: this.state.score[0]
-      });
+      if (this.state.record) {
+        await this.checkProb();
+        await firebase.database().ref('results/' + this.state.name + " (" + new Date() + ")").set({
+          name: this.state.name,
+          questions: this.state.questions,
+          time: Math.floor(this.state.timerTime / 1000),
+          score: this.state.score[0]
+        });
+      }
       this.setState({maracheck: 2})
     }
 
     setData() {
-      this.setState({name: event.target.value})
+      if (event.target.name == "name") {
+        this.setState({name: event.target.value})
+      }
+      else if (event.target.name == "record") {
+        this.setState({record: event.target.checked})
+      }
     }
 
     startTimer = () => {
@@ -287,8 +295,9 @@ class Cipher extends React.Component {
           <div className={`box content`}>
             <h1>codebusters test</h1>
             <p>marathon mode gives you randomized question types from the ones available. if you select the record option, your results will be recorded and sent to a server where others can view your results. in short, it's an easy way to do codebusters tryouts online. good luck! ヽ(*・ω・)ﾉ</p>
-            <label for="name">enter name:</label>
-            <input type="text" id="name" name="name" onChange={this.setData}></input>
+            <label for="record">record? <input type="checkbox" id="record" name="record" onChange={this.setData}></input></label>
+            <br></br>
+            <label for="name">enter name: <input type="text" id="name" name="name" onChange={this.setData}></input></label>
             <br></br>
             <button onClick={this.startMarathon}>start</button>
           </div>
@@ -296,7 +305,7 @@ class Cipher extends React.Component {
         {(this.props.marathon && this.state.maracheck === 2) && (
           <div className={`box content`}>
             <h1>test complete!</h1>
-            <p>we pride ourselves on transparency. go <a href="https://codebusters-406e6.firebaseio.com/results.json" target="_blank">here</a> to check your results. or <a href="https://github.com/mobiusdonut/codebusters" target="_blank">here</a> to check out the source code.</p>
+            <p>we pride ourselves on transparency. if you selected record, go <a href="https://codebusters-406e6.firebaseio.com/results.json" target="_blank">here</a> to check your results. or <a href="https://github.com/mobiusdonut/codebusters" target="_blank">here</a> to check out the source code.</p>
           </div>
         )}
       </div>;
