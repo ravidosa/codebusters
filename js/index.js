@@ -38,3 +38,8 @@ $(document).keydown(function(e){
 $(document).bind("contextmenu",function(e) { 
     e.preventDefault();
 });
+$('body').bind('copy', function(e) {
+    e.preventDefault();
+    alert("not so fast! in order to prevent cheating, ctrl + c has been disabled. happy codebusting! (¬‿¬ )")
+    return false;
+});

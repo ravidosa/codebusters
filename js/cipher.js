@@ -36,6 +36,8 @@ class Cipher extends React.Component {
     }
 
     setLetter(event) {
+      console.log(event.key)
+      if (!event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
         if (event.key == "`") {
           event.key = "ñ"
         }
@@ -45,6 +47,7 @@ class Cipher extends React.Component {
           console.log(this.state.selectedLetter, this.state.alphabet.indexOf(this.state.selectedLetter), this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)], this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]), this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1), this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1)), this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))])
           this.setState({ guesses: newguess, selectedLetter: this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))]});
         }
+      }
     }
 
     selectLetter(event) {
@@ -133,7 +136,7 @@ class Cipher extends React.Component {
     }
 
     async startMarathon() {
-      this.setState({maracheck: 1})
+      this.setState({maracheck: 1, score: [0, 0], questions: []})
       await this.stopTimer();
       await this.resetTimer();
       this.startTimer();
@@ -283,7 +286,7 @@ class Cipher extends React.Component {
         {(this.props.marathon && this.state.maracheck === 0) && (
           <div className={`box content`}>
             <h1>codebusters test</h1>
-            <p>marathon mode gives you randomized question types from the ones listed above. if you select the record option, your results will be recorded and sent to a server where others can view your results. in short, it's an easy way to do codebusters tryouts online. good luck! ヽ(*・ω・)ﾉ</p>
+            <p>marathon mode gives you randomized question types from the ones available. if you select the record option, your results will be recorded and sent to a server where others can view your results. in short, it's an easy way to do codebusters tryouts online. good luck! ヽ(*・ω・)ﾉ</p>
             <label for="name">enter name:</label>
             <input type="text" id="name" name="name" onChange={this.setData}></input>
             <br></br>
@@ -293,7 +296,7 @@ class Cipher extends React.Component {
         {(this.props.marathon && this.state.maracheck === 2) && (
           <div className={`box content`}>
             <h1>test complete!</h1>
-            <p>we pride ourselves on transparency. go <a href="https://codebusters-406e6.firebaseio.com/results.json">here</a> to check your results. or <a href="https://github.com/mobiusdonut/codebusters">here</a> to check out the source code.</p>
+            <p>we pride ourselves on transparency. go <a href="https://codebusters-406e6.firebaseio.com/results.json" target="_blank">here</a> to check your results. or <a href="https://github.com/mobiusdonut/codebusters" target="_blank">here</a> to check out the source code.</p>
           </div>
         )}
       </div>;
