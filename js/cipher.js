@@ -1,5 +1,7 @@
 const en_alphabet = "abcdefghijklmnopqrstuvwxyz"
 const es_alphabet = "abcdefghijklmnñopqrstuvwxyz"
+const baconian = ["aaaaa", "aaaab", "aaaba", "aaabb", "aabaa", "aabab", "aabba", "aabbb", "abaaa", "abaaa", "abaab", "ababa", "ababb", "abbaa", "abbab" ,"abbba", "abbbb", "baaaa", "baaab", "baaba", "baabb", "baabb", "babaa", "babab", "babba", "babbb"]
+const alt_baconian = [{a: "a", b: "b"}, {a: "b", b: "a"}, {a: "1", b: "0"}, {a: "0", b: "1"}, {a: "/", b: "\\"}, {a: "\\", b: "/"}, {a: "╩", b: "╦"}, {a: "╦", b: "╩"}, {a: "Ṿ", b: "Å"}, {a: "Å", b: "Ṿ"}]
 
 class Cipher extends React.Component {
   
@@ -38,28 +40,39 @@ class Cipher extends React.Component {
     }
 
     setLetter(event) {
-      console.log(event.key)
       if (event.key == "`" || (event.key >= "a" && event.key <= "z")) {
         if (event.key == "`") {
           event.key = "ñ"
         }
+      if (this.state.probType !== "Baconian Cipher") {
         if (this.state.alphabet.indexOf(this.state.selectedLetter) !== -1) {
-          let newguess = this.state.guesses;
-          newguess[this.state.alphabet.indexOf(this.state.selectedLetter)] = event.key;
-          console.log(this.state.selectedLetter, this.state.alphabet.indexOf(this.state.selectedLetter), this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)], this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]), this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1), this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1)), this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))])
-          this.setState({ guesses: newguess, selectedLetter: this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))]});
+            let newguess = this.state.guesses;
+            newguess[this.state.alphabet.indexOf(this.state.selectedLetter)] = event.key;
+            console.log(this.state.selectedLetter, this.state.alphabet.indexOf(this.state.selectedLetter), this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)], this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]), this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1), this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1)), this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))])
+            this.setState({ guesses: newguess, selectedLetter: this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))]});
+          }
         }
+      }
+      if (this.state.probType === "Baconian Cipher") {
+        let newguess = this.state.guesses;
+        newguess[this.state.mapping.indexOf(this.state.selectedLetter)] = event.key;
+        this.setState({ guesses: newguess});
       }
     }
 
     selectLetter(event) {
+      if (this.state.probType !== "Baconian Cipher") {
         if (event.target.innerText[0].match(/[ña-z]/i)) {
-            this.setState({ selectedLetter: event.target.innerText[0] });
+          this.setState({ selectedLetter: event.target.innerText[0]});
         }
+      }
+      else {
+        this.setState({ selectedLetter: event.target.innerText.slice(0, 5)});
+      }
     }
 
     getProb(probType) {
-      this.setState({probType: (probType === 'aristocrat' ? "Aristocrat Cipher" : probType === 'affine' ? "Affine Cipher" : probType === 'patristocrat' ? "Patristocrat Cipher" : probType === 'atbash' ? "Atbash Cipher" : probType === 'caesar' ? "Caesar Cipher" : probType === 'xenocrypt' ? "Xenocrypt" : null)})
+      this.setState({probType: (probType === 'aristocrat' ? "Aristocrat Cipher" : probType === 'affine' ? "Affine Cipher" : probType === 'patristocrat' ? "Patristocrat Cipher" : probType === 'atbash' ? "Atbash Cipher" : probType === 'caesar' ? "Caesar Cipher" : probType === 'xenocrypt' ? "Xenocrypt" : probType === 'baconian' ? "Baconian Cipher": null)})
       let array = (probType !== 'xenocrypt' ? en_alphabet : es_alphabet).split("");
       let a, b, hint = null;
 
@@ -87,52 +100,69 @@ class Cipher extends React.Component {
         }
       }
 
-      fetch('https://api.quotable.io/random')
-      .then(response => response.json())
-      .then(data => {
-        if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
-          const k = Math.floor(Math.random() * 12);
-          if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
-            const l = Math.floor(Math.random() * 8);
-            if (l < 3.5) {
-              hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, l + 1)
+      if (probType === "baconian") {
+        fetch('https://random-word-api.herokuapp.com/word')
+        .then(response => response.json())
+        .then(data => {
+          const k = Math.floor(Math.random() * 3);
+          if (k < 1) {
+            hint = "The message starts with " + data[0].slice(0, 3)
+          }
+          let obj = alt_baconian[Math.floor(Math.random() * alt_baconian.length)];
+          let mapping = baconian.map((key, value) => {return key.replace(new RegExp(Object.keys(obj).join("|"), "gi"), function(matched) { 
+            return obj[matched]; 
+          })})
+          this.setState({plaintext: data[0], mapping: mapping, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
+        });
+      }
+      else {
+        fetch('https://api.quotable.io/random')
+        .then(response => response.json())
+        .then(data => {
+          if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
+            const k = Math.floor(Math.random() * 12);
+            if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
+              const l = Math.floor(Math.random() * 8);
+              if (l < 3.5) {
+                hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, l + 1)
+              }
+              else {
+                hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(3 - l)
+              }
             }
-            else {
-              hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(3 - l)
+            else if (probType === "affine") {
+              if (k < 6) {
+                hint = "a = " + a + ", b = " + b;
+              }
+              else if (k < 9) {
+                hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, 2)
+              }
+              else {
+                hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(-2)
+              }
             }
           }
-          else if (probType === "affine") {
-            if (k < 6) {
-              hint = "a = " + a + ", b = " + b;
-            }
-            else if (k < 9) {
-              hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, 2)
-            }
-            else {
-              hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(-2)
-            }
+          if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
+            this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
           }
-        }
-        if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
-          this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
-        }
-        else if (probType === "patristocrat" || probType === "affine") {
-          this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
-        }
-        else if (probType === "xenocrypt") {
-          fetch("https://cors-anywhere.herokuapp.com/https://google-translate-proxy.herokuapp.com/api/translate?query=" + data.content + "&sourceLang=en&targetLang=es", {mode: 'cors'}).then(response => response.json())
-          .then(trans => {
-            console.log(trans.extract.translation)
-            this.setState({plaintext: trans.extract.translation.replace('ñ','|').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('|','ñ').toLowerCase(), source: data.author, mapping: array, guesses: "___________________________".split(""), checked: false, alphabet: es_alphabet});
-          });
-        }
-      });
+          else if (probType === "patristocrat" || probType === "affine") {
+            this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
+          }
+          else if (probType === "xenocrypt") {
+            fetch("https://cors-anywhere.herokuapp.com/https://google-translate-proxy.herokuapp.com/api/translate?query=" + data.content + "&sourceLang=en&targetLang=es", {mode: 'cors'}).then(response => response.json())
+            .then(trans => {
+              console.log(trans.extract.translation)
+              this.setState({plaintext: trans.extract.translation.replace('ñ','|').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('|','ñ').toLowerCase(), source: data.author, mapping: array, guesses: "___________________________".split(""), checked: false, alphabet: es_alphabet});
+            });
+          }
+        });
+      }
     }
 
     nextProb() {
       if (this.props.marathon) {
         this.checkProb();
-        this.getProb(["aristocrat", "atbash", "caesar", "patristocrat", "affine", "xenocrypt"][Math.floor(Math.random() * 6)]);
+        this.getProb(["aristocrat", "atbash", "caesar", "patristocrat", "affine", "xenocrypt", "baconian"][Math.floor(Math.random() * 7)]);
       }
       else {
         this.getProb(this.props.type);
@@ -141,12 +171,20 @@ class Cipher extends React.Component {
 
     checkProb() {
       let mistakes = 0;
-      for (let i = 0; i < this.state.alphabet.length; i++) {
-        if (this.state.alphabet.split("")[i].localeCompare(this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[i])].charAt(0)) && this.state.plaintext.indexOf(this.state.alphabet.split("")[i]) !== -1) {
-          mistakes += 1;
+      if (this.state.probType !== "Baconian Cipher") {
+        for (let i = 0; i < this.state.alphabet.length; i++) {
+          if (this.state.alphabet.split("")[i].localeCompare(this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[i])].charAt(0)) && this.state.plaintext.indexOf(this.state.alphabet.split("")[i]) !== -1) {
+            mistakes += 1;
+          }
         }
       }
-
+      else {
+        for (let i = 0; i < this.state.alphabet.length; i++) {
+          if (this.state.guesses.indexOf(this.state.alphabet.split("")[i]) !== i && this.state.plaintext.indexOf(this.state.alphabet.split("")[i]) !== -1) {
+            mistakes += 1;
+          }
+        }
+      }
       if (mistakes < 3 && !this.state.checked) {
         this.setState({score: [this.state.score[0] + 1, this.state.score[1] + 1], checked: true})
       }
@@ -235,62 +273,93 @@ class Cipher extends React.Component {
       return <div class="container">
         {(!this.props.marathon || this.state.maracheck === 1) && (
           <div className={`box content`} tabIndex={-1} onKeyDown={this.setLetter}>
-            <h1>{this.state.probType}</h1>
+          <h1>{this.state.probType}</h1>
+          {this.state.probType !== "Baconian Cipher" && (
             <p>{`Solve this code by ${this.state.source} which has been encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}.`}</p>
-            {this.state.hint && (
-              <p>{"hint: " + this.state.hint}</p>
-            )}
-            {
-                this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
-                    return(
-                        <div class="word" onClick={this.selectLetter}>
-                            {
-                                word.split("").map((letter, index) => {
-                                    if (this.state.alphabet.indexOf(letter) !== -1) {
-                                        return(
-                                            <div class="letter">
-                                                <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
-                                                <div>{this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}</div>
-                                            </div>
-                                        )
-                                    }
-                                    else {
-                                        return(
-                                            <div class="letter">
-                                                <div>{letter}</div>
-                                                <div>&nbsp;</div>
-                                            </div>
-                                        )
-                                    }
-                                })
-                            }
-                        </div>
-                    )
+          )}
+          {this.state.probType === "Baconian Cipher" && (
+            <p>{`Solve this message which has been encoded as a Baconian Cipher.`}</p>
+          )}
+          {this.state.hint && (
+            <p>{"hint: " + this.state.hint}</p>
+          )}
+          {this.state.probType !== "Baconian Cipher" && (
+              this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
+                  return(
+                      <div class="word" onClick={this.selectLetter}>
+                          {
+                              word.split("").map((letter, index) => {
+                                  if (this.state.alphabet.indexOf(letter) !== -1) {
+                                      return(
+                                          <div class="letter">
+                                              <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
+                                              <div>{this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}</div>
+                                          </div>
+                                      )
+                                  }
+                                  else {
+                                      return(
+                                          <div class="letter">
+                                              <div>{letter}</div>
+                                              <div>&nbsp;</div>
+                                          </div>
+                                      )
+                                  }
+                              })
+                          }
+                      </div>
+                  )
               })
-          }
-          <table>
-              <tr>
+          )}
+          {this.state.probType === "Baconian Cipher" && (
+              <div class="word" onClick={this.selectLetter}>
                   {
-                    this.state.alphabet.split("").map((letter, index) => {
-                      return <th>{letter}</th>
-                    })
+                      this.state.plaintext.split("").map((letter, index) => {
+                          if (this.state.alphabet.indexOf(letter) !== -1) {
+                              return(
+                                  <div class="letter">
+                                      <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
+                                      <div>&nbsp;&nbsp;{this.state.guesses[this.state.mapping.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}&nbsp;&nbsp;</div>
+                                  </div>
+                              )
+                          }
+                          else {
+                              return(
+                                  <div class="letter">
+                                      <div>{letter}</div>
+                                      <div>&nbsp;</div>
+                                  </div>
+                              )
+                          }
+                      })
                   }
-              </tr>
-              <tr>
-                  {
-                    this.state.alphabet.split("").map((letter, index) => {
-                      return <td>{(this.state.plaintext.match(new RegExp(this.state.alphabet[this.state.mapping.indexOf(letter)], "g")) || []).length}</td>
-                    })
-                  }
-              </tr>
-              <tr>
-                  {
-                    this.state.alphabet.split("").map((letter, index) => {
-                      return <td>{this.state.guesses[this.state.alphabet.indexOf(letter)]}</td>
-                    })
-                  }
-              </tr>
-          </table>
+              </div>
+          )}
+          {this.state.probType !== "Baconian Cipher" && (
+              <table>
+                <tr>
+                    {
+                      this.state.alphabet.split("").map((letter, index) => {
+                        return <th>{letter}</th>
+                      })
+                    }
+                </tr>
+                <tr>
+                    {
+                      this.state.alphabet.split("").map((letter, index) => {
+                        return <td>{(this.state.plaintext.match(new RegExp(this.state.alphabet[this.state.mapping.indexOf(letter)], "g")) || []).length}</td>
+                      })
+                    }
+                </tr>
+                <tr>
+                    {
+                      this.state.alphabet.split("").map((letter, index) => {
+                        return <td>{this.state.guesses[this.state.alphabet.indexOf(letter)]}</td>
+                      })
+                    }
+                </tr>
+            </table>
+          )}
           <div className="stopwatch">
             <div className={`stopwatch-display ${parseInt(minutes) >= 50 ? "warning" : ""}`}>
               {hours} : {minutes} : {seconds} : {centiseconds}

@@ -23,6 +23,10 @@ $(document).ready(() => {
         const el = document.querySelector("#root");
         ReactDOM.render(<Cipher marathon={false} type="xenocrypt"/>, el);
     });
+    $( "#baconian" ).click(function() {
+        const el = document.querySelector("#root");
+        ReactDOM.render(<Cipher marathon={false} type="baconian"/>, el);
+    });
     $( "#marathon" ).click(function() {
         $( ".problemtype" ).hide();
         $( "#marathon" ).text("marathon!")
