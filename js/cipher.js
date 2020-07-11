@@ -23,7 +23,8 @@ class Cipher extends React.Component {
         questions: [],
         maracheck: 0,
         name: "",
-        record: false
+        record: false,
+        hint: null
       }
 
       this.setLetter = this.setLetter.bind(this);
@@ -60,6 +61,7 @@ class Cipher extends React.Component {
     getProb(probType) {
       this.setState({probType: (probType === 'aristocrat' ? "Aristocrat Cipher" : probType === 'affine' ? "Affine Cipher" : probType === 'patristocrat' ? "Patristocrat Cipher" : probType === 'atbash' ? "Atbash Cipher" : probType === 'caesar' ? "Caesar Cipher" : probType === 'xenocrypt' ? "Xenocrypt" : null)})
       let array = (probType !== 'xenocrypt' ? en_alphabet : es_alphabet).split("");
+      let a, b, hint = null;
 
       if (probType === "aristocrat" || probType === "patristocrat" || probType === "xenocrypt") {
         for (let i = array.length - 1; i > 0; i--) {
@@ -78,8 +80,8 @@ class Cipher extends React.Component {
         }
       }
       else if (probType === "affine") {
-        const a = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25][Math.floor(Math.random() * 12)];
-        const b = Math.floor(Math.random() * 26);
+        a = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25][Math.floor(Math.random() * 12)];
+        b = Math.floor(Math.random() * 26);
         for (let i = 0; i < array.length; i++) {
           array[i] = en_alphabet.charAt((a * i + b) % 26);
         }
@@ -88,11 +90,34 @@ class Cipher extends React.Component {
       fetch('https://api.quotable.io/random')
       .then(response => response.json())
       .then(data => {
+        if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
+          const k = Math.floor(Math.random() * 12);
+          if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
+            const l = Math.floor(Math.random() * 8);
+            if (l < 3.5) {
+              hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, l + 1)
+            }
+            else {
+              hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(3 - l)
+            }
+          }
+          else if (probType === "affine") {
+            if (k < 6) {
+              hint = "a = " + a + ", b = " + b;
+            }
+            else if (k < 9) {
+              hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, 2)
+            }
+            else {
+              hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(-2)
+            }
+          }
+        }
         if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
-          this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet});
+          this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
         }
         else if (probType === "patristocrat" || probType === "affine") {
-          this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet});
+          this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
         }
         else if (probType === "xenocrypt") {
           fetch("https://cors-anywhere.herokuapp.com/https://google-translate-proxy.herokuapp.com/api/translate?query=" + data.content + "&sourceLang=en&targetLang=es", {mode: 'cors'}).then(response => response.json())
@@ -131,7 +156,7 @@ class Cipher extends React.Component {
 
       if (this.props.marathon && !this.state.checked) {
         let currq = this.state.questions;
-        currq.push({question: this.state.plaintext, mistakes: mistakes, time: Math.floor(this.state.timerTime / 1000), type: this.props.type})
+        currq.push({question: this.state.plaintext, mistakes: mistakes, time: Math.floor(this.state.timerTime / 1000), type: this.props.type, hint: this.state.hint})
         this.setState({questions: currq});
       }
     }
@@ -212,6 +237,9 @@ class Cipher extends React.Component {
           <div className={`box content`} tabIndex={-1} onKeyDown={this.setLetter}>
             <h1>{this.state.probType}</h1>
             <p>{`Solve this code by ${this.state.source} which has been encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}.`}</p>
+            {this.state.hint && (
+              <p>{"hint: " + this.state.hint}</p>
+            )}
             {
                 this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
                     return(
