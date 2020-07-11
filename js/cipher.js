@@ -26,7 +26,8 @@ class Cipher extends React.Component {
         maracheck: 0,
         name: "",
         record: false,
-        hint: null
+        hint: null,
+        encoding: null
       }
 
       this.setLetter = this.setLetter.bind(this);
@@ -71,17 +72,47 @@ class Cipher extends React.Component {
       }
     }
 
-    getProb(probType) {
+    async getProb(probType) {
       this.setState({probType: (probType === 'aristocrat' ? "Aristocrat Cipher" : probType === 'affine' ? "Affine Cipher" : probType === 'patristocrat' ? "Patristocrat Cipher" : probType === 'atbash' ? "Atbash Cipher" : probType === 'caesar' ? "Caesar Cipher" : probType === 'xenocrypt' ? "Xenocrypt" : probType === 'baconian' ? "Baconian Cipher": null)})
       let array = (probType !== 'xenocrypt' ? en_alphabet : es_alphabet).split("");
-      let a, b, hint = null;
+      let a, b, hint, encoding = null;
 
       if (probType === "aristocrat" || probType === "patristocrat" || probType === "xenocrypt") {
-        for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * i);
-          const temp = array[i];
-          array[i] = array[j];
-          array[j] = temp;
+        const k = Math.floor(Math.random() * 6);
+        if (k < 3) {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * i);
+            const temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+          }
+        }
+        else if (k < 5) {
+          encoding = "k1";
+          let k1response = await fetch('https://random-word-api.herokuapp.com/word');
+          let k1data = await k1response.json();
+          k1data = k1data[0].split('').filter((item, pos, self) => {return self.indexOf(item) == pos;}).join('');
+          array = (k1data + array.join("").replace(new RegExp(k1data.split("").join("|"), "gi"), "")).split("");
+          const l = Math.floor(Math.random() * (array.length - k1data.length));
+          for (let i = array.length; i > l; i--) {
+            array.push(array.shift())
+          }
+          let temp = [];
+          for (let m = 0; m < array.length; m++) {
+            temp.push((probType !== 'xenocrypt' ? en_alphabet : es_alphabet)[array.indexOf((probType !== 'xenocrypt' ? en_alphabet : es_alphabet)[m])])
+          }
+          array = temp;
+        }
+        else if (k < 6) {
+          encoding = "k2";
+          let k2response = await fetch('https://random-word-api.herokuapp.com/word');
+          let k2data = await k2response.json();
+          k2data = k2data[0].split('').filter((item, pos, self) => {return self.indexOf(item) == pos;}).join('');
+          array = (k2data + array.join("").replace(new RegExp(k2data.split("").join("|"), "gi"), "")).split("");
+          const l = Math.floor(Math.random() * (array.length - k2data.length));
+          for (let i = array.length; i > l; i--) {
+            array.push(array.shift())
+          }
         }
       }
       else if (probType === "atbash") {
@@ -101,61 +132,56 @@ class Cipher extends React.Component {
       }
 
       if (probType === "baconian") {
-        fetch('https://random-word-api.herokuapp.com/word')
-        .then(response => response.json())
-        .then(data => {
-          const k = Math.floor(Math.random() * 3);
-          if (k < 1) {
-            hint = "The message starts with " + data[0].slice(0, 3)
-          }
-          let obj = alt_baconian[Math.floor(Math.random() * alt_baconian.length)];
-          let mapping = baconian.map((key, value) => {return key.replace(new RegExp(Object.keys(obj).join("|"), "gi"), function(matched) { 
-            return obj[matched]; 
-          })})
-          this.setState({plaintext: data[0], mapping: mapping, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
-        });
+        let response = await fetch('https://random-word-api.herokuapp.com/word');
+        let data = await response.json();
+        const k = Math.floor(Math.random() * 3);
+        if (k < 1) {
+          hint = "The message starts with " + data[0].slice(0, 3)
+        }
+        let obj = alt_baconian[Math.floor(Math.random() * alt_baconian.length)];
+        let mapping = baconian.map((key, value) => {return key.replace(new RegExp(Object.keys(obj).join("|"), "gi"), function(matched) { 
+          return obj[matched]; 
+        })})
+        this.setState({plaintext: data[0], mapping: mapping, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
       }
       else {
-        fetch('https://api.quotable.io/random')
-        .then(response => response.json())
-        .then(data => {
-          if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
-            const k = Math.floor(Math.random() * 12);
-            if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
-              const l = Math.floor(Math.random() * 8);
-              if (l < 3.5) {
-                hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, l + 1)
-              }
-              else {
-                hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(3 - l)
-              }
+        let response = await fetch('https://api.quotable.io/random');
+        let data = await response.json();
+        if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
+          const k = Math.floor(Math.random() * 12);
+          if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
+            const l = Math.floor(Math.random() * 8);
+            if (l < 3.5) {
+              hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, l + 1)
             }
-            else if (probType === "affine") {
-              if (k < 6) {
-                hint = "a = " + a + ", b = " + b;
-              }
-              else if (k < 9) {
-                hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, 2)
-              }
-              else {
-                hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(-2)
-              }
+            else {
+              hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(3 - l)
             }
           }
-          if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
-            this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
+          else if (probType === "affine") {
+            if (k < 6) {
+              hint = "a = " + a + ", b = " + b;
+            }
+            else if (k < 9) {
+              hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, 2)
+            }
+            else {
+              hint = "The message ends with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(-2)
+            }
           }
-          else if (probType === "patristocrat" || probType === "affine") {
-            this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
-          }
-          else if (probType === "xenocrypt") {
-            fetch("https://cors-anywhere.herokuapp.com/https://google-translate-proxy.herokuapp.com/api/translate?query=" + data.content + "&sourceLang=en&targetLang=es", {mode: 'cors'}).then(response => response.json())
-            .then(trans => {
-              console.log(trans.extract.translation)
-              this.setState({plaintext: trans.extract.translation.replace('ñ','|').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('|','ñ').toLowerCase(), source: data.author, mapping: array, guesses: "___________________________".split(""), checked: false, alphabet: es_alphabet});
-            });
-          }
-        });
+        }
+        if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
+          this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding});
+        }
+        else if (probType === "patristocrat" || probType === "affine") {
+          this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding});
+        }
+        else if (probType === "xenocrypt") {
+          let transresponse = await fetch("https://cors-anywhere.herokuapp.com/https://google-translate-proxy.herokuapp.com/api/translate?query=" + data.content + "&sourceLang=en&targetLang=es", {mode: 'cors'});
+          let trans = await transresponse.json();
+          console.log(trans.extract.translation)
+          this.setState({plaintext: trans.extract.translation.replace('ñ','|').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('|','ñ').toLowerCase(), source: data.author, mapping: array, guesses: "___________________________".split(""), checked: false, alphabet: es_alphabet, encoding: encoding});
+        }
       }
     }
 
@@ -282,6 +308,9 @@ class Cipher extends React.Component {
           )}
           {this.state.hint && (
             <p>{"hint: " + this.state.hint}</p>
+          )}
+          {this.state.encoding && (
+            <p>{"encoding: " + this.state.encoding + " alphabet"}</p>
           )}
           {this.state.probType !== "Baconian Cipher" && (
               this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
