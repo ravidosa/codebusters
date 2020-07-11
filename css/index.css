@@ -5,6 +5,9 @@ body {
   align-content: center;
   font-family: monospace;
   word-wrap: break-word;
+  background-color: #fff;
+  background-image: linear-gradient(0deg, transparent .05em, rgba(0,0,0,.05) .05em, rgba(0,0,0,.05) .125000em, transparent .125000em), linear-gradient(90deg, rgba(0,0,0,.05) .062500em, transparent .062500em);
+  background-size: .75em .75em;
 }
 .box, .buttonchoice {
   width: 75vw;
@@ -79,9 +82,6 @@ h1 {
   width: 20%;
   margin: 0 auto;
 
-}
-p, input, label {
-  font-size: 8px;
 }
 .container {
   width: 100% !important;

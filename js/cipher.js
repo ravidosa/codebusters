@@ -38,7 +38,7 @@ class Cipher extends React.Component {
 
     setLetter(event) {
       console.log(event.key)
-      if (!event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      if (event.key == "`" || (event.key >= "a" && event.key <= "z")) {
         if (event.key == "`") {
           event.key = "ñ"
         }
@@ -294,7 +294,7 @@ class Cipher extends React.Component {
         {(this.props.marathon && this.state.maracheck === 0) && (
           <div className={`box content`}>
             <h1>codebusters test</h1>
-            <p>marathon mode gives you randomized question types from the ones available. if you select the record option, your results will be recorded and sent to a server where others can view your results. in short, it's an easy way to do codebusters tryouts online. good luck! ヽ(*・ω・)ﾉ</p>
+            <p>marathon mode gives you randomized question types from the ones available. if you select the record option, your results will be recorded and sent to a server where others can view your results. it's also an easy way to do codebusters tryouts online. good luck! ヽ(*・ω・)ﾉ</p>
             <label for="record">record? <input type="checkbox" id="record" name="record" onChange={this.setData}></input></label>
             <br></br>
             <label for="name">enter name: <input type="text" id="name" name="name" onChange={this.setData}></input></label>
