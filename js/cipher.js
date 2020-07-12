@@ -55,11 +55,11 @@ class Cipher extends React.Component {
             this.setState({ guesses: newguess, selectedLetter: this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))]});
           }
         }
-      }
-      if (this.state.probType === "Baconian Cipher") {
-        let newguess = this.state.guesses;
-        newguess[this.state.mapping.indexOf(this.state.selectedLetter)] = event.key;
-        this.setState({ guesses: newguess});
+        if (this.state.probType === "Baconian Cipher") {
+          let newguess = this.state.guesses;
+          newguess[this.state.mapping.indexOf(this.state.selectedLetter)] = event.key;
+          this.setState({ guesses: newguess});
+        }
       }
     }
 
