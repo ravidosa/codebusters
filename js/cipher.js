@@ -27,9 +27,9 @@ class Cipher extends React.Component {
         maracheck: 0,
         name: "",
         record: false,
-        hint: null,
-        encoding: null,
-        mangle: null
+        hint: "",
+        encoding: "",
+        mangle: false
       }
 
       this.setLetter = this.setLetter.bind(this);
@@ -77,11 +77,13 @@ class Cipher extends React.Component {
     async getProb(probType) {
       this.setState({probType: (probType === 'aristocrat' ? "Aristocrat Cipher" : probType === 'affine' ? "Affine Cipher" : probType === 'patristocrat' ? "Patristocrat Cipher" : probType === 'atbash' ? "Atbash Cipher" : probType === 'caesar' ? "Caesar Cipher" : probType === 'xenocrypt' ? "Xenocrypt" : probType === 'baconian' ? "Baconian Cipher": null)})
       let array = (probType !== 'xenocrypt' ? en_alphabet : es_alphabet).split("");
-      let a, b, hint, encoding, mangle = null;
+      let a, b = null;
+      let hint, encoding = "";
+      let mangle = false;
 
       if (probType === "aristocrat" || probType === "patristocrat" || probType === "xenocrypt") {
         const k = Math.floor(Math.random() * 6);
-        if (k < 3) {
+        if ((k < 3 && probType === "aristocrat") || (k < 1 && probType === "patristocrat")) {
           for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * i);
             const temp = array[i];
@@ -89,7 +91,7 @@ class Cipher extends React.Component {
             array[j] = temp;
           }
         }
-        else if (k < 5) {
+        else if ((k < 5 && probType === "aristocrat") || (k < 4 && probType === "patristocrat")) {
           encoding = "k1";
           let k1response = await fetch('https://random-word-api.herokuapp.com/word');
           let k1data = await k1response.json();
@@ -105,7 +107,7 @@ class Cipher extends React.Component {
           }
           array = temp;
         }
-        else if (k < 6) {
+        else if ((k < 6 && probType === "aristocrat") || (k < 6 && probType === "patristocrat")) {
           encoding = "k2";
           let k2response = await fetch('https://random-word-api.herokuapp.com/word');
           let k2data = await k2response.json();
@@ -153,7 +155,7 @@ class Cipher extends React.Component {
             data.content = data.content.split(" ").map((key) => {return (mangled_words[key.toLowerCase()] || key)}).join(" ");
             mangle = true;
           }
-          if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
+          if ((k < 6 && probType === "patristocrat") || (k < 3 && probType === "aristocrat")) {
             const l = Math.floor(Math.random() * 8);
             if (l < 3.5) {
               hint = "The message starts with " + data.content.replace(/[^A-Za-z]/g, "").toLowerCase().slice(0, l + 1)
@@ -178,13 +180,13 @@ class Cipher extends React.Component {
           this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding, mangle: mangle});
         }
         else if (probType === "patristocrat" || probType === "affine") {
-          this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding});
+          this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding, mangle: mangle});
         }
         else if (probType === "xenocrypt") {
           let transresponse = await fetch("https://cors-anywhere.herokuapp.com/https://google-translate-proxy.herokuapp.com/api/translate?query=" + data.content + "&sourceLang=en&targetLang=es", {mode: 'cors'});
           let trans = await transresponse.json();
           console.log(trans.extract.translation)
-          this.setState({plaintext: trans.extract.translation.replace('ñ','|').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('|','ñ').toLowerCase(), source: data.author, mapping: array, guesses: "___________________________".split(""), checked: false, alphabet: es_alphabet, encoding: encoding});
+          this.setState({plaintext: trans.extract.translation.replace('ñ','|').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('|','ñ').toLowerCase(), source: data.author, mapping: array, guesses: "___________________________".split(""), checked: false, alphabet: es_alphabet,  hint: hint, encoding: encoding, mangle: mangle});
         }
       }
     }
@@ -192,7 +194,7 @@ class Cipher extends React.Component {
     nextProb() {
       if (this.props.marathon) {
         this.checkProb();
-        this.getProb(["aristocrat", "atbash", "caesar", "patristocrat", "affine", "xenocrypt", "baconian"][Math.floor(Math.random() * 7)]);
+        this.getProb(["aristocrat", "atbash", "caesar", "patristocrat", "affine", "baconian", "xenocrypt"][Math.floor(Math.random() * 7)]);
       }
       else {
         this.getProb(this.props.type);
@@ -215,7 +217,7 @@ class Cipher extends React.Component {
           }
         }
       }
-      if (mistakes < 3 && !this.state.checked) {
+      if (mistakes < 2 && !this.state.checked) {
         this.setState({score: [this.state.score[0] + 1, this.state.score[1] + 1], checked: true})
       }
       else if (!this.state.checked) {
@@ -224,7 +226,7 @@ class Cipher extends React.Component {
 
       if (this.props.marathon && !this.state.checked) {
         let currq = this.state.questions;
-        currq.push({question: this.state.plaintext, mistakes: mistakes, time: Math.floor(this.state.timerTime / 1000), type: this.props.type, hint: this.state.hint})
+        currq.push({question: this.state.plaintext, mistakes: mistakes, time: Math.floor(this.state.timerTime / 1000), type: this.state.probType.split(" ")[0].toLowerCase(), hint: ((this.state.hint && this.state.hint.length > 0) ? this.state.hint : null), mangle: this.state.mangle, encoding: (this.state.encoding.length > 0 ? this.state.encoding : null)})
         this.setState({questions: currq});
       }
     }
@@ -243,10 +245,59 @@ class Cipher extends React.Component {
           name: this.state.name,
           questions: this.state.questions,
           time: Math.floor(this.state.timerTime / 1000),
-          score: this.state.score[0]
+          correct: this.state.score[0],
+          score: this.state.questions.reduce((a, b) => a + this.computeScore(b), 0)
         });
       }
       this.setState({maracheck: 2})
+    }
+
+    computeScore(question) {
+      if (question.type === "atbash" || question.type === "caesar" || question.type === "affine") {
+        return 100;
+      }
+      else if (question.type === "baconian") {
+        return Math.max(0, 200 - (100 * Math.max(0, question.mistakes - 2)));
+      }
+      else if (question.type === "aristocrat") {
+        if (question.hint) {
+          if (question.mangle) {
+            if (question.hint.split(" ")[question.hint.split(" ").length - 1].length > 3) {
+              return Math.max(0, 500 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (50 * (question.hint.split(" ")[question.hint.split(" ").length - 1].length - 3)) - (100 * Math.max(0, question.mistakes - 2)));
+            }
+            else {
+              return Math.max(0, 500 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (100 * Math.max(0, question.mistakes - 2)));
+            }
+          }
+          else {
+            return Math.max(0, 200 - (100 * Math.max(0, question.mistakes - 2)));
+          }
+        }
+        else {
+          if (question.mangle) {
+            return Math.max(0, 700 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (100 * Math.max(0, question.mistakes - 2)));
+          }
+          else {
+            return Math.max(0, 350 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (100 * Math.max(0, question.mistakes - 2)));
+          }
+        }
+      }
+      else if (question.type === "patristocrat") {
+        if (question.hint) {
+          if (question.hint.split(" ")[question.hint.split(" ").length - 1].length > 3) {
+            return Math.max(0, 650 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (50 * (question.hint.split(" ")[question.hint.split(" ").length - 1].length - 3)) - (100 * Math.max(0, question.mistakes - 2)));
+          }
+          else {
+            return Math.max(0, 650 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (100 * Math.max(0, question.mistakes - 2)));
+          }
+        }
+        else {
+          return Math.max(0, 700 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (100 * Math.max(0, question.mistakes - 2)));
+        }
+      }
+      else if (question.type === "xenocrypt") {
+        return Math.max(0, 700 - (question.encoding === "k1" ? 100 : question.encoding === "k1" ? 75: 0) - (100 * Math.max(0, question.mistakes - 2)));
+      }
     }
 
     setData() {
@@ -305,12 +356,12 @@ class Cipher extends React.Component {
           <div className={`box content`} tabIndex={-1} onKeyDown={this.setLetter}>
           <h1>{this.state.probType}</h1>
           {this.state.probType !== "Baconian Cipher" && (
-            <p>{`Solve this code by ${this.state.source} which has been ${(this.state.mangle ? "badly misheard and" : "")} encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}${(this.state.encoding ? " using a " + this.state.encoding + " alphabet" : "")}.`}</p>
+            <p>{`Solve this code by ${this.state.source} which has been ${(this.state.mangle ? "badly misheard and" : "")} encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}${(this.state.encoding.length > 0 ? " using a " + this.state.encoding + " alphabet" : "")}.`}</p>
           )}
           {this.state.probType === "Baconian Cipher" && (
             <p>{`Solve this message which has been encoded as a Baconian Cipher.`}</p>
           )}
-          {this.state.hint && (
+          {this.state.hint && this.state.hint.length > 0 && (
             <p>{"hint: " + this.state.hint}</p>
           )}
           {this.state.probType !== "Baconian Cipher" && (
