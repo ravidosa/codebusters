@@ -150,7 +150,6 @@ class Cipher extends React.Component {
           const k = Math.floor(Math.random() * 12);
           if (k < 2 && probType === "aristocrat") {
             data.content = data.content.split(" ").map((key) => {return (mangled_words[key.toLowerCase()] || key)}).join(" ");
-            console.log(data.content)
           }
           if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
             const l = Math.floor(Math.random() * 8);
