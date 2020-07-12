@@ -2,6 +2,7 @@ const en_alphabet = "abcdefghijklmnopqrstuvwxyz"
 const es_alphabet = "abcdefghijklmnñopqrstuvwxyz"
 const baconian = ["aaaaa", "aaaab", "aaaba", "aaabb", "aabaa", "aabab", "aabba", "aabbb", "abaaa", "abaaa", "abaab", "ababa", "ababb", "abbaa", "abbab" ,"abbba", "abbbb", "baaaa", "baaab", "baaba", "baabb", "baabb", "babaa", "babab", "babba", "babbb"]
 const alt_baconian = [{a: "a", b: "b"}, {a: "b", b: "a"}, {a: "1", b: "0"}, {a: "0", b: "1"}, {a: "/", b: "\\"}, {a: "\\", b: "/"}, {a: "╩", b: "╦"}, {a: "╦", b: "╩"}, {a: "Ṿ", b: "Å"}, {a: "Å", b: "Ṿ"}]
+const mangled_words = {"I": "eye", "your": "you're", "you": "ewe", "time": "thyme", "all": "awl", "the": "teh", "one": "won", "sees": "seize", "life": "lief", "for": "four", "to": "two", "choose": "chews", "do": "dew", "not": "knot", "see": "sea", "world": "whirled", "soul": "sole", "be": "bee", "in": "inn", "driving": "dirving", "we": "wee", "have": "halve", "waiter": "wader", "or": "oar", "you'll": "yule", "better": "bettor", "but": "butt", "and": "adn", "their": "there", "years": "yaers", "find": "fined", "by": "buy", "greater": "grater", "take": "taek", "shown": "shone", "told": "tolled", "plate": "plait", "back": "back", "scientist": "scnetiist", "new": "knew", "would": "wood", "an": "in", "that": "taht", "there's": "theirs", "some": "sum", "birth": "berth", "which": "witch", "right": "write", "great": "grate"}
 
 class Cipher extends React.Component {
   
@@ -139,9 +140,7 @@ class Cipher extends React.Component {
           hint = "The message starts with " + data[0].slice(0, 3)
         }
         let obj = alt_baconian[Math.floor(Math.random() * alt_baconian.length)];
-        let mapping = baconian.map((key, value) => {return key.replace(new RegExp(Object.keys(obj).join("|"), "gi"), function(matched) { 
-          return obj[matched]; 
-        })})
+        let mapping = baconian.map((key, value) => {return key.replace(new RegExp(Object.keys(obj).join("|"), "gi"), (matched) => {return obj[matched];})})
         this.setState({plaintext: data[0], mapping: mapping, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
       }
       else {
@@ -149,6 +148,10 @@ class Cipher extends React.Component {
         let data = await response.json();
         if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
           const k = Math.floor(Math.random() * 12);
+          if (k < 2 && probType === "aristocrat") {
+            data.content = data.content.split(" ").map((key) => {return (mangled_words[key.toLowerCase()] || key)}).join(" ");
+            console.log(data.content)
+          }
           if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
             const l = Math.floor(Math.random() * 8);
             if (l < 3.5) {
