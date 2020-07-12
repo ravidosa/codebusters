@@ -28,7 +28,8 @@ class Cipher extends React.Component {
         name: "",
         record: false,
         hint: null,
-        encoding: null
+        encoding: null,
+        mangle: null
       }
 
       this.setLetter = this.setLetter.bind(this);
@@ -76,7 +77,7 @@ class Cipher extends React.Component {
     async getProb(probType) {
       this.setState({probType: (probType === 'aristocrat' ? "Aristocrat Cipher" : probType === 'affine' ? "Affine Cipher" : probType === 'patristocrat' ? "Patristocrat Cipher" : probType === 'atbash' ? "Atbash Cipher" : probType === 'caesar' ? "Caesar Cipher" : probType === 'xenocrypt' ? "Xenocrypt" : probType === 'baconian' ? "Baconian Cipher": null)})
       let array = (probType !== 'xenocrypt' ? en_alphabet : es_alphabet).split("");
-      let a, b, hint, encoding = null;
+      let a, b, hint, encoding, mangle = null;
 
       if (probType === "aristocrat" || probType === "patristocrat" || probType === "xenocrypt") {
         const k = Math.floor(Math.random() * 6);
@@ -150,6 +151,7 @@ class Cipher extends React.Component {
           const k = Math.floor(Math.random() * 12);
           if (k < 2 && probType === "aristocrat") {
             data.content = data.content.split(" ").map((key) => {return (mangled_words[key.toLowerCase()] || key)}).join(" ");
+            mangle = true;
           }
           if ((k < 6 && probType === "patristocrat") || (k < 4 && probType === "aristocrat")) {
             const l = Math.floor(Math.random() * 8);
@@ -173,7 +175,7 @@ class Cipher extends React.Component {
           }
         }
         if (probType === "aristocrat" || probType === "atbash" || probType === "caesar") {
-          this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding});
+          this.setState({plaintext: data.content.toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding, mangle: mangle});
         }
         else if (probType === "patristocrat" || probType === "affine") {
           this.setState({plaintext: data.content.replace(/[^A-Za-z]/g, "").toLowerCase(), source: data.author, mapping: array, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint, encoding: encoding});
@@ -303,16 +305,13 @@ class Cipher extends React.Component {
           <div className={`box content`} tabIndex={-1} onKeyDown={this.setLetter}>
           <h1>{this.state.probType}</h1>
           {this.state.probType !== "Baconian Cipher" && (
-            <p>{`Solve this code by ${this.state.source} which has been encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}.`}</p>
+            <p>{`Solve this code by ${this.state.source} which has been ${(this.state.mangle ? "badly misheard and" : "")} encoded as a${("AEIOU".indexOf(this.state.probType.charAt(0)) !== -1 ? "n" : "") + " " + this.state.probType}${(this.state.encoding ? " using a " + this.state.encoding + " alphabet" : "")}.`}</p>
           )}
           {this.state.probType === "Baconian Cipher" && (
             <p>{`Solve this message which has been encoded as a Baconian Cipher.`}</p>
           )}
           {this.state.hint && (
             <p>{"hint: " + this.state.hint}</p>
-          )}
-          {this.state.encoding && (
-            <p>{"encoding: " + this.state.encoding + " alphabet"}</p>
           )}
           {this.state.probType !== "Baconian Cipher" && (
               this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
