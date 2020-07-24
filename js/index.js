@@ -27,6 +27,9 @@ $(document).ready(() => {
         const el = document.querySelector("#root");
         ReactDOM.render(<Cipher marathon={false} type="baconian"/>, el);
     });
+    $( "#results" ).click(function() {
+        $( "#my_dataviz" ).toggle();
+    });
     $( "#marathon" ).click(function() {
         $( ".problemtype" ).hide();
         $( "#marathon" ).text("marathon!")

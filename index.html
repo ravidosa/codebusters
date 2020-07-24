@@ -8,6 +8,7 @@
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.16.0/firebase-app.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.16.0/firebase-database.js"></script>
+        <script src="https://d3js.org/d3.v4.js"></script>
         <script>
             // Your web app's Firebase configuration
             var firebaseConfig = {
@@ -45,7 +46,115 @@
                 <h1 class="bigh">codebusters</h1>
                 <h6><a href="https://github.com/mobiusdonut/codebusters/wiki" target="_blank">wiki + resources</a></h6>
                 <h6><a href="https://github.com/mobiusdonut" target="_blank">more by me</a></h6>
+                <button id="results" style="display: block; margin: 0 auto;">results</button>
+                <div id="my_dataviz"></div>
             </div>
         </div>
     </body>
+    <script>
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 460 - margin.left - margin.right,
+        height = 450 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+    .style("width", "100%")
+    .style("display", "none")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .style("margin", "0 auto")
+        .style("display", "block")
+    .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    //Read the data
+    d3.json("https://codebusters-406e6.firebaseio.com/results.json", (data) => {
+        data = Object.values(data);
+        // Add X axis
+        var x = d3.scaleLinear()
+            .domain([0, Math.max.apply(Math, data.map((o) => { return o.time / 60; }))])
+            .range([ 0, width ])
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([0,  Math.max.apply(Math, data.map((o) => { return o.score; }))])
+            .range([ height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y));
+        svg.append("text")             
+            .attr("transform",
+                    "translate(" + (width/2) + " ," + 
+                    (height + margin.top + 20) + ")")
+            .style("text-anchor", "middle")
+            .text("Time (minutes)");
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x",0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Score");
+
+        // Add a tooltip div. Here I define the general feature of the tooltip: stuff that do not depend on the data point.
+        // Its opacity is set to 0: we don't see it by default.
+        var tooltip = d3.select("#my_dataviz")
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "5px")
+            .style("position", "absolute")
+
+
+
+        // A function that change this tooltip when the user hover a point.
+        // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
+        var mouseover = function(d) {
+            tooltip
+            .style("opacity", 1)
+        }
+
+        var mousemove = function(d) {
+            ("0" + (d.time % 60)).slice(-2)
+            tooltip
+            .html("User: " + d.name + "<br>" + d.score + " (" + Math.floor(d.time / 60) + ":" + ("0" + (d.time % 60)).slice(-2) + ")")
+            .style("left", (d3.mouse(this)[0] + 150) + "px") // It is important to put the +90: other wise the tooltip is exactly where the point is an it creates a weird effect
+            .style("top", (d3.mouse(this)[1] + 240) + "px")
+        }
+
+        // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
+        var mouseleave = function(d) {
+            tooltip
+            .transition()
+            .duration(200)
+            .style("opacity", 0)
+        }
+
+        // Add dots
+        svg.append('g')
+            .selectAll("dot")
+            .data(data.filter(function(d,i){return i<50})) // the .filter part is just to keep a few dots on the chart, not all of them
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return x(d.time / 60); } )
+            .attr("cy", function (d) { return y(d.score); } )
+            .attr("r", 7)
+            .style("fill", "#3273dc")
+            .style("opacity", 0.3)
+            .style("stroke", "white")
+            .on("mouseover", mouseover )
+            .on("mousemove", mousemove )
+            .on("mouseleave", mouseleave )
+
+    })
+    </script>
 </html>
