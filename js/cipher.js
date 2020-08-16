@@ -93,7 +93,7 @@ class Cipher extends React.Component {
         }
         else if ((k < 5 && probType === "aristocrat") || (k < 4 && probType === "patristocrat") || (k < 9 && probType === "xenocrypt")) {
           encoding = "k1";
-          let k1response = await fetch('https://random-word-api.herokuapp.com/word');
+          let k1response = await fetch('https://cors-anywhere.herokuapp.com/https://random-word-api.herokuapp.com/word');
           let k1data = await k1response.json();
           k1data = k1data[0].split('').filter((item, pos, self) => {return self.indexOf(item) == pos;}).join('');
           array = (k1data + array.join("").replace(new RegExp(k1data.split("").join("|"), "gi"), "")).split("");
@@ -109,7 +109,7 @@ class Cipher extends React.Component {
         }
         else if ((k < 6 && probType === "aristocrat") || (k < 6 && probType === "patristocrat") || (k < 12 && probType === "xenocrypt")) {
           encoding = "k2";
-          let k2response = await fetch('https://random-word-api.herokuapp.com/word');
+          let k2response = await fetch('https://cors-anywhere.herokuapp.com/https://random-word-api.herokuapp.com/word');
           let k2data = await k2response.json();
           k2data = k2data[0].split('').filter((item, pos, self) => {return self.indexOf(item) == pos;}).join('');
           array = (k2data + array.join("").replace(new RegExp(k2data.split("").join("|"), "gi"), "")).split("");
@@ -136,7 +136,7 @@ class Cipher extends React.Component {
       }
 
       if (probType === "baconian") {
-        let response = await fetch('https://random-word-api.herokuapp.com/word');
+        let response = await fetch('https://cors-anywhere.herokuapp.com/https://random-word-api.herokuapp.com/word');
         let data = await response.json();
         const k = Math.floor(Math.random() * 3);
         if (k < 1) {
@@ -147,7 +147,7 @@ class Cipher extends React.Component {
         this.setState({plaintext: data[0], mapping: mapping, guesses: "__________________________".split(""), checked: false, alphabet: en_alphabet, hint: hint});
       }
       else {
-        let response = await fetch('https://api.quotable.io/random');
+        let response = await fetch('https://cors-anywhere.herokuapp.com/https://api.quotable.io/random');
         let data = await response.json();
         if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
           const k = Math.floor(Math.random() * 12);
