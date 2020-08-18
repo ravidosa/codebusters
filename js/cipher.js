@@ -266,7 +266,7 @@ class Cipher extends React.Component {
 
     computeScore(question) {
       if (question.type === "atbash" || question.type === "caesar" || question.type === "affine") {
-        return 100;
+        return Math.max(0, 100 - (100 * Math.max(0, question.mistakes - 2)));
       }
       else if (question.type === "baconian") {
         return Math.max(0, 200 - (100 * Math.max(0, question.mistakes - 2)));
