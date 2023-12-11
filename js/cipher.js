@@ -498,7 +498,7 @@ class Cipher extends React.Component {
         {(this.props.marathon && this.state.maracheck === 2) && (
           <div className={`box content`}>
             <h1>test complete!</h1>
-            <p>we pride ourselves on transparency. if you selected record, go <a href="https://codebusters-406e6.firebaseio.com/results.json" target="_blank">here</a> to check your results. or <a href="https://github.com/mobiusdonut/codebusters" target="_blank">here</a> to check out the source code.</p>
+            <p>we pride ourselves on transparency. if you selected record, go <a href="https://codebusters-406e6.firebaseio.com/results.json" target="_blank">here</a> to check your results. or <a href="https://github.com/ravidosa/codebusters" target="_blank">here</a> to check out the source code.</p>
             <h5>{"score: " + this.state.questions.reduce((a, b) => a + this.computeScore(b), 0)}</h5>
           </div>
         )}
