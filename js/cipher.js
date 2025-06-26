@@ -193,7 +193,6 @@ class Cipher extends React.Component {
       else {
         let response = await fetch(`https://api.allorigins.win/raw?url=https://zenquotes.io?api=random&t=${Date.now()}`);
         let data = await response.json();
-        console.log(data);
         if (probType === "aristocrat" || probType === "patristocrat" || probType === "affine") {
           const k = Math.floor(Math.random() * 12);
           if (k < 2 && probType === "aristocrat") {
