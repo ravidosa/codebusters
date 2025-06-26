@@ -14,6 +14,7 @@ class Cipher extends React.Component {
         source: "",
         letter: "_",
         selectedLetter: "",
+        selectedIndex: null,
         mapping: [],
         guesses: "__________________________".split(""),
         probType: "",
@@ -44,16 +45,28 @@ class Cipher extends React.Component {
     }
 
     setLetter(event) {
+      console.log(event.key)
       if (event.key == "`" || (event.key >= "a" && event.key <= "z")) {
         if (event.key == "`") {
-          event.key = "ñ"
+          event.key = "ñ";
         }
       if (this.state.probType !== "Baconian Cipher") {
         if (this.state.alphabet.indexOf(this.state.selectedLetter) !== -1) {
             let newguess = this.state.guesses;
             newguess[this.state.alphabet.indexOf(this.state.selectedLetter)] = event.key;
-            console.log(this.state.selectedLetter, this.state.alphabet.indexOf(this.state.selectedLetter), this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)], this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]), this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1), this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1)), this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))])
-            this.setState({ guesses: newguess, selectedLetter: this.state.mapping[this.state.alphabet.indexOf(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").charAt(this.state.plaintext.replace(/[^ñA-Za-z]/g, "").indexOf(this.state.mapping[this.state.alphabet.indexOf(this.state.selectedLetter)]) + 1))]});
+            let split = this.state.plaintext.split(" ");
+            let ind = this.state.selectedIndex.split("-");
+            let nextIndex = null;
+            let nextLetter = "";
+            if (parseInt(ind[1]) != split[parseInt(ind[0])].length - 1) {
+              nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0])][parseInt(ind[1]) + 1])];
+              nextIndex = `${parseInt(ind[0])}-${parseInt(ind[1]) + 1}`;
+            }
+            else if (parseInt(ind[0]) < split.length) {
+              nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0]) + 1][0])];
+              nextIndex = `${parseInt(ind[0]) + 1}-0}`;
+            }
+            this.setState({ guesses: newguess, selectedLetter: nextLetter, selectedIndex: nextIndex});
           }
         }
         if (this.state.probType === "Baconian Cipher") {
@@ -62,16 +75,48 @@ class Cipher extends React.Component {
           this.setState({ guesses: newguess});
         }
       }
+      else if (this.state.probType !== "Baconian Cipher") {
+        if (event.key == "ArrowLeft") {
+          let split = this.state.plaintext.split(" ");
+            let ind = this.state.selectedIndex.split("-");
+            let nextIndex = null;
+            let nextLetter = "";
+            if (parseInt(ind[1]) != 0) {
+              nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0])][parseInt(ind[1]) - 1])];
+              nextIndex = `${parseInt(ind[0])}-${parseInt(ind[1]) - 1}`;
+            }
+            else if (parseInt(ind[0]) > 0) {
+              nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0]) - 1][split[parseInt(ind[0]) - 1].length - 1])];
+              nextIndex = `${parseInt(ind[0]) + 1}-${split[parseInt(ind[0]) - 1].length - 1}}`;
+            }
+            this.setState({selectedLetter: nextLetter, selectedIndex: nextIndex});
+        }
+        else if (event.key == "ArrowRight") {
+          let split = this.state.plaintext.split(" ");
+            let ind = this.state.selectedIndex.split("-");
+            let nextIndex = null;
+            let nextLetter = "";
+            if (parseInt(ind[1]) != split[parseInt(ind[0])].length - 1) {
+              nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0])][parseInt(ind[1]) + 1])];
+              nextIndex = `${parseInt(ind[0])}-${parseInt(ind[1]) + 1}`;
+            }
+            else if (parseInt(ind[0]) < split.length) {
+              nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0]) + 1][0])];
+              nextIndex = `${parseInt(ind[0]) + 1}-0}`;
+            }
+            this.setState({selectedLetter: nextLetter, selectedIndex: nextIndex});
+        }
+      }
     }
 
     selectLetter(event) {
       if (this.state.probType !== "Baconian Cipher") {
         if (event.target.innerText[0].match(/[ña-z]/i)) {
-          this.setState({ selectedLetter: event.target.innerText[0]});
+          this.setState({ selectedLetter: event.target.innerText[0], selectedIndex: event.target.id});
         }
       }
       else {
-        this.setState({ selectedLetter: event.target.innerText.slice(0, 5)});
+        this.setState({ selectedLetter: event.target.innerText.slice(0, 5), selectedIndex: event.target.id});
       }
     }
 
@@ -380,14 +425,14 @@ class Cipher extends React.Component {
             <p class="warning">{this.state.error}</p>
           )}
           {this.state.probType !== "Baconian Cipher" && (
-              this.state.plaintext.toLowerCase().split(" ").map((word, index) => {
+              this.state.plaintext.toLowerCase().split(" ").map((word, windex) => {
                   return(
                       <div class="word" onClick={this.selectLetter}>
                           {
-                              word.split("").map((letter, index) => {
+                              word.split("").map((letter, lindex) => {
                                   if (this.state.alphabet.indexOf(letter) !== -1) {
                                       return(
-                                          <div class="letter">
+                                          <div class="letter" id={`${windex}-${lindex}`}>
                                               <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
                                               <div>{this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}</div>
                                           </div>
@@ -395,7 +440,7 @@ class Cipher extends React.Component {
                                   }
                                   else {
                                       return(
-                                          <div class="letter">
+                                          <div class="letter" id={`${windex}-${lindex}`}>
                                               <div>{letter}</div>
                                               <div>&nbsp;</div>
                                           </div>
@@ -413,7 +458,7 @@ class Cipher extends React.Component {
                       this.state.plaintext.split("").map((letter, index) => {
                           if (this.state.alphabet.indexOf(letter) !== -1) {
                               return(
-                                  <div class="letter">
+                                  <div class="letter" id={index}>
                                       <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
                                       <div>&nbsp;&nbsp;{this.state.guesses[this.state.mapping.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}&nbsp;&nbsp;</div>
                                   </div>
