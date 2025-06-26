@@ -45,7 +45,6 @@ class Cipher extends React.Component {
     }
 
     setLetter(event) {
-      console.log(event.key)
       if (event.key == "`" || (event.key >= "a" && event.key <= "z")) {
         if (event.key == "`") {
           event.key = "ñ";
@@ -64,7 +63,7 @@ class Cipher extends React.Component {
             }
             else if (parseInt(ind[0]) < split.length) {
               nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0]) + 1][0])];
-              nextIndex = `${parseInt(ind[0]) + 1}-0}`;
+              nextIndex = `${parseInt(ind[0]) + 1}-0`;
             }
             this.setState({ guesses: newguess, selectedLetter: nextLetter, selectedIndex: nextIndex});
           }
@@ -87,7 +86,7 @@ class Cipher extends React.Component {
             }
             else if (parseInt(ind[0]) > 0) {
               nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0]) - 1][split[parseInt(ind[0]) - 1].length - 1])];
-              nextIndex = `${parseInt(ind[0]) + 1}-${split[parseInt(ind[0]) - 1].length - 1}}`;
+              nextIndex = `${parseInt(ind[0]) - 1}-${split[parseInt(ind[0]) - 1].length - 1}`;
             }
             this.setState({selectedLetter: nextLetter, selectedIndex: nextIndex});
         }
@@ -102,7 +101,7 @@ class Cipher extends React.Component {
             }
             else if (parseInt(ind[0]) < split.length) {
               nextLetter = this.state.mapping[this.state.alphabet.indexOf(split[parseInt(ind[0]) + 1][0])];
-              nextIndex = `${parseInt(ind[0]) + 1}-0}`;
+              nextIndex = `${parseInt(ind[0]) + 1}-0`;
             }
             this.setState({selectedLetter: nextLetter, selectedIndex: nextIndex});
         }
@@ -432,7 +431,7 @@ class Cipher extends React.Component {
                               word.split("").map((letter, lindex) => {
                                   if (this.state.alphabet.indexOf(letter) !== -1) {
                                       return(
-                                          <div class="letter" id={`${windex}-${lindex}`}>
+                                          <div class={`letter ${`${windex}-${lindex}` === this.state.selectedIndex ? "letter-selected" : ""}`} id={`${windex}-${lindex}`}>
                                               <div className={`${this.state.mapping[this.state.alphabet.indexOf(letter)] === this.state.selectedLetter ? "selected" : ""}`}>{this.state.mapping[this.state.alphabet.indexOf(letter)]}</div>
                                               <div>{this.state.guesses[this.state.alphabet.indexOf(this.state.mapping[this.state.alphabet.indexOf(letter)])]}</div>
                                           </div>
@@ -440,7 +439,7 @@ class Cipher extends React.Component {
                                   }
                                   else {
                                       return(
-                                          <div class="letter" id={`${windex}-${lindex}`}>
+                                          <div class={`letter ${`${windex}-${lindex}` === this.state.selectedIndex ? "letter-selected" : ""}`} id={`${windex}-${lindex}`}>
                                               <div>{letter}</div>
                                               <div>&nbsp;</div>
                                           </div>
